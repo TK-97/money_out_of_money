@@ -58,47 +58,55 @@ plt.xlabel('Time')
 plt.ylabel('Open price')
 
 ########################################################################################################################
-
+########################################### MOVING AVERAGES ############################################################
 # I have to make it weighted so the newer elements weight more that the older ones
 
-# Defining a function to create moving averages for our variables
-def MA(var_name,MAwindow):
-    data[str(var_name+'_MA'+str(MAwindow))] = data[var_name].rolling(window=MAwindow).mean()
-    return data[str(var_name+'_MA'+str(MAwindow))]
+# # Defining a function to create moving averages for our variables
+# def SMA(var_name,MAwindow):
+#     data[str(var_name+'_SMA'+str(MAwindow))] = data[var_name].rolling(window=MAwindow).mean()
+#     return data[str(var_name+'_SMA'+str(MAwindow))]
+#
+# #Creating the variables
+# SMA('OPEN',24)
+# SMA('OPEN',50)
+# SMA('OPEN',100)
+# SMA('OPEN',700)
+# SMA('OPEN',10000)
+# SMA('CLOSE',24)
+# SMA('CLOSE',50)
+# SMA('CLOSE',100)
+# SMA('CLOSE',700)
+# SMA('CLOSE',10000)
+# SMA('HIGH',24)
+# SMA('HIGH',50)
+# SMA('HIGH',100)
+# SMA('HIGH',700)
+# SMA('HIGH',10000)
+# SMA('LOW',24)
+# SMA('LOW',50)
+# SMA('LOW',100)
+# SMA('LOW',700)
+# SMA('LOW',10000)
 
-#Creating the variables
-MA('OPEN',24)
-MA('OPEN',50)
-MA('OPEN',100)
-MA('OPEN',700)
-MA('OPEN',10000)
+def EMA(var_name,MAspan):
+    data[str(var_name+'_EMA'+str(MAspan))] = data[var_name].ewm(span=MAspan,adjust=False).mean()
+    return data[str(var_name+'_EMA'+str(MAspan))]
 
-# MA('CLOSE',24)
-# MA('CLOSE',50)
-# MA('CLOSE',100)
-# MA('CLOSE',700)
-# MA('CLOSE',10000)
-
-# MA('HIGH',24)
-# MA('HIGH',50)
-# MA('HIGH',100)
-# MA('HIGH',700)
-# MA('HIGH',10000)
-
-# MA('LOW',24)
-# MA('LOW',50)
-# MA('LOW',100)
-# MA('LOW',700)
-# MA('LOW',10000)
+# #Creating the variables
+EMA('OPEN', 24) #6hours
+EMA('OPEN', 50) #12hours
+EMA('OPEN', 100) #Daily
+EMA('OPEN', 700) #Weekly
+EMA('OPEN', 10000) #Trimestral
 
 plt.figure(3)
 ax = plt.subplot()
-ax.plot(data['DATETIME'],data['OPEN'],label='Original Data')
-ax.plot(data['DATETIME'],data['OPEN_MA24'],label='OPEN_MA24')
-ax.plot(data['DATETIME'],data['OPEN_MA50'],label='OPEN_MA50')
-ax.plot(data['DATETIME'],data['OPEN_MA100'],label='OPEN_MA100')
-ax.plot(data['DATETIME'],data['OPEN_MA700'],label='OPEN_MA700')
-ax.plot(data['DATETIME'],data['OPEN_MA10000'],label='OPEN_MA10000')
+ax.plot(data['DATETIME'], data['OPEN'], label='Original Data')
+ax.plot(data['DATETIME'], data['OPEN_EMA24'], label='OPEN_EMA24')
+ax.plot(data['DATETIME'], data['OPEN_EMA50'], label='OPEN_EMA50')
+ax.plot(data['DATETIME'], data['OPEN_EMA100'], label='OPEN_EMA100')
+ax.plot(data['DATETIME'], data['OPEN_EMA700'], label='OPEN_EMA700')
+ax.plot(data['DATETIME'], data['OPEN_EMA10000'], label='OPEN_EMA10000')
 ax.legend()
 plt.title('Original data (Open) and Moving Averages')
 
@@ -127,11 +135,11 @@ def detrend_diff(var_name):
 
 #Detrending the timeseries using Moving average(window=10000):
 def detrend_MA(var_name):
-    diff = data[var_name] - data[str(var_name+'_MA10000')]
+    diff = data[var_name] - data[str(var_name+'_EMA10000')]
     return diff
 
 #detrending all de variables (I think it's better if we use detrending with MA):
-data['open_detrend'] = detrend_diff('OPEN')
+data['open_detrend'] = detrend_MA('OPEN')
 # data['close_detrend'] = detrend_MA('CLOSE')
 # data['high_detrend'] = detrend_MA('HIGH')
 # data['low_detrend'] = detrend_MA('LOW')
@@ -139,7 +147,7 @@ data['open_detrend'] = detrend_diff('OPEN')
 ########################################################################################################################
 
 plt.figure(5)
-plt.plot(data['DATETIME'],data['open_detrend'],label='Detrended Data')
+plt.plot(data['DATETIME'], data['open_detrend'], label='Detrended Data')
 plt.legend()
 plt.title('Detrended Data')
 
@@ -174,22 +182,36 @@ print(data.head(5))
 
 # print(np.count_nonzero(~np.isnan(data['open_detrend']))) #to check how many NAN values there are in the detrended data
 
-signal=data['open_detrend'][9999:] #because the first 10000 are NaN due to the detrending with 10000MA
-# signal=data['open_detrend'] #use this if detrended with detrend_diff
+# signal = data['open_detrend'][9999:] #because, using simple moving average, the first 10000 are NaN due to the detrending with 10000MA
+signal = data['open_detrend'] #use this if detrended with detrend_diff or EMA
 
 fft_calc = np.fft.fft(signal)
 
 n = len(signal)
-freq = np.fft.fftfreq(n,.01) #how should be the x axis?
+freq = np.fft.fftfreq(n, .01) #how should be the x axis?
 
 plt.figure(7)
 plt.title('Fourier Transform on Detrended Data')
 # plt.plot(data['DATETIME'],data['open_detrend'])
-plt.plot(freq[0:int(len(freq)/2)],np.abs(fft_calc)[0:int(len(fft_calc)/2)]) # only plots half of the spectrum (positive)
+plt.plot(freq[0:int(len(freq)/2)], np.abs(fft_calc)[0:int(len(fft_calc)/2)]) # only plots half of the spectrum (positive)
 
 plt.show()
+# print(data['open_detrend'])
 ########################################################################################################################
-
+# Export Data do csv
+data.to_csv('data_modified.csv')
 #print(data['open_detrend'].size)
 #print(freq.size)
 #print(fft_calc.size)
+
+########################################################################################################################
+################################## Price Vs Volume & Seasonality Correlation Spearman ##################################
+from scipy.stats import spearmanr
+print('Correlation Open vs Volume: '+str(np.round(spearmanr(data['OPEN'], data['VOL'])[0], 5))+' (p-value: '+str(np.round(spearmanr(data['OPEN'], data['VOL'])[1], 5))+')')
+print('Correlation Open vs Hour: '+str(np.round(spearmanr(data['OPEN'], data['HOUR'])[0], 5))+' (p-value: '+str(np.round(spearmanr(data['OPEN'], data['HOUR'])[1], 5))+')')
+print('Correlation Open vs Day: '+str(np.round(spearmanr(data['OPEN'], data['DAY'])[0], 5))+' (p-value: '+str(np.round(spearmanr(data['OPEN'], data['DAY'])[1], 5))+')')
+print('Correlation Open vs Weekday: '+str(np.round(spearmanr(data['OPEN'], data['WEEKDAY'])[0], 5))+' (p-value: '+str(np.round(spearmanr(data['OPEN'], data['WEEKDAY'])[1], 5))+')')
+print('Correlation Open vs Month: '+str(np.round(spearmanr(data['OPEN'], data['MONTH'])[0], 5))+' (p-value: '+str(np.round(spearmanr(data['OPEN'], data['MONTH'])[1], 5))+')')
+
+########################################################################################################################
+############################################# Empirical Mode Decomposition #############################################
