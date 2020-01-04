@@ -195,7 +195,7 @@ plt.title('Fourier Transform on Detrended Data')
 # plt.plot(data['DATETIME'],data['open_detrend'])
 plt.plot(freq[0:int(len(freq)/2)], np.abs(fft_calc)[0:int(len(fft_calc)/2)]) # only plots half of the spectrum (positive)
 
-plt.show()
+# plt.show()
 # print(data['open_detrend'])
 ########################################################################################################################
 # Export Data do csv
@@ -215,3 +215,43 @@ print('Correlation Open vs Month: '+str(np.round(spearmanr(data['OPEN'], data['M
 
 ########################################################################################################################
 ############################################# Empirical Mode Decomposition #############################################
+from PyEMD import EMD, Visualisation
+
+# Define Signal and time
+t = data['DATETIME'][0:672].to_numpy()
+# t1 = np.linspace(0, 1, 200) #Experiment
+s1 = data['OPEN'][0:672].to_numpy()
+s2 = data['open_detrend'][0:672].to_numpy()
+# s3 = np.cos(11*2*np.pi*t1*t1) + 6*t1*t1 #Experiment pure wave
+
+# Execute EMD on signal (original vs detrended)
+IMFs1 = EMD().emd(s1, t)
+IMFs2 = EMD().emd(s2, t)
+N1 = IMFs1.shape[0]+1 # to see how many IMFs there are to plot
+N2 = IMFs2.shape[0]+1 # to see how many IMFs there are to plot
+# Plot IMFs
+    # Plotting Original Signal
+plt.figure(8)
+plt.subplot(N1, 1, 1)
+plt.plot(t, s1, 'r')
+plt.title("Input signal: Open FX Data 2015-2019")
+plt.xlabel("Time [Date]")
+    # Plotting IMFs
+for n, imf in enumerate(IMFs1):
+    plt.subplot(N1, 1, n+2)
+    plt.plot(t, imf, 'g')
+    plt.title("IMF "+str(n+1))
+    plt.xlabel("Time [Date (1week)]")
+
+plt.figure(9)
+plt.subplot(N2, 1, 1)
+plt.plot(t, s2, 'r')
+plt.title("Input signal: Open (deterended) FX Data 2015-2019")
+plt.xlabel("Time [Date]")
+for n, imf in enumerate(IMFs2):
+    plt.subplot(N2, 1, n+2)
+    plt.plot(t, imf, 'g')
+    plt.title("IMF "+str(n+1))
+    plt.xlabel("Time [Date (1week)]")
+plt.show()
+
