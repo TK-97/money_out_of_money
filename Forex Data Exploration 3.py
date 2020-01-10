@@ -6,7 +6,7 @@ import datetime
 ########################################################################################################################
 
 # Importing Forex Data from 2015 until 2019
-data = pd.read_csv (r'C:\Users\Vasco\Documents\Ms Data Science\1Semester\3Research Project 1\FX_Data_Russian\EURUSD_2015_2019_Volume_Data.txt',dtype=str)
+data = pd.read_csv (r'C:\Users\Vasco\Documents\Ms Data Science\1Semester\3Research Project 1\FX_Data_Russian\EURUSD_191001_191231.txt',dtype=str)
 data['DATETIME'] = data['DATE']+' '+data['TIME']
 # data['DATETIME'] = data['DATE'].map(str)+' '+data['TIME'].map(str)
 # data['<DATETIME>'] = data['<DATE>'].str[0:4]+'/'+data['<DATE>'].str[4:6]+'/'+data['<DATE>'].str[6:]+ ' ' + data['<TIME>'].str[0:2]+':'+data['<TIME>'].str[2:4]+':'+data['<TIME>'].str[4:6]
@@ -216,20 +216,13 @@ print('Correlation Open vs Month: '+str(np.round(spearmanr(data['OPEN'], data['M
 ########################################################################################################################
 ############################################# Empirical Mode Decomposition #############################################
 from PyEMD import EMD, Visualisation
-start = 0
-finish = 2110
-emd_month = "January"
-emd_year = "2015"
+
 # Define Signal and time
-t = data['DATETIME'][start:finish].to_numpy()
+t = data['DATETIME'][0:672].to_numpy()
 # t1 = np.linspace(0, 1, 200) #Experiment
-s1 = data['OPEN'][start:finish].to_numpy()
-s2 = data['open_detrend'][start:finish].to_numpy()
+s1 = data['OPEN'][0:672].to_numpy()
+s2 = data['open_detrend'][0:672].to_numpy()
 # s3 = np.cos(11*2*np.pi*t1*t1) + 6*t1*t1 #Experiment pure wave
-filename1 = 's1'+ emd_month + emd_year + '.csv'
-np.savetxt(filename1, s1, delimiter=",")
-filename2 = 's2' + emd_month + emd_year + '.csv'
-np.savetxt(filename2, s2, delimiter=",")
 
 # Execute EMD on signal (original vs detrended)
 IMFs1 = EMD().emd(s1, t)
@@ -241,28 +234,24 @@ N2 = IMFs2.shape[0]+1 # to see how many IMFs there are to plot
 plt.figure(8)
 plt.subplot(N1, 1, 1)
 plt.plot(t, s1, 'r')
-plt.title("Input signal: Open FX Data " + emd_month + " " + emd_year)
+plt.title("Input signal: Open FX Data 2015-2019")
 plt.xlabel("Time [Date]")
     # Plotting IMFs
 for n, imf in enumerate(IMFs1):
     plt.subplot(N1, 1, n+2)
     plt.plot(t, imf, 'g')
     plt.title("IMF "+str(n+1))
-    plt.xlabel("Time")
-    filename = 's1imf' + str(n+1) + emd_month + emd_year + '.csv'
-    np.savetxt(filename, imf, delimiter=",")
+    plt.xlabel("Time [Date (1week)]")
 
 plt.figure(9)
 plt.subplot(N2, 1, 1)
 plt.plot(t, s2, 'r')
-plt.title("Input signal: Open (deterended) FX Data " + emd_month + " " + emd_year)
+plt.title("Input signal: Open (deterended) FX Data 2015-2019")
 plt.xlabel("Time [Date]")
 for n, imf in enumerate(IMFs2):
     plt.subplot(N2, 1, n+2)
     plt.plot(t, imf, 'g')
     plt.title("IMF "+str(n+1))
-    plt.xlabel("Time")
-    filename = 's2imf' + str(n+1) + emd_month + emd_year + '.csv'
-    np.savetxt(filename, imf, delimiter=",")
+    plt.xlabel("Time [Date (1week)]")
 plt.show()
 
