@@ -53,7 +53,7 @@ plt.title('Transactions per Hours of the Day (UTC TimeZone)')
 
 plt.figure(2)
 Timeline = plt.plot(data['DATETIME'],data['OPEN'])
-plt.title('Currency pair USD/EUR 2015-2019')
+plt.title('Currency pair EUR/USD 2015-2019')
 plt.xlabel('Time')
 plt.ylabel('Open price')
 
@@ -216,10 +216,10 @@ print('Correlation Open vs Month: '+str(np.round(spearmanr(data['OPEN'], data['M
 ########################################################################################################################
 ############################################# Empirical Mode Decomposition #############################################
 from PyEMD import EMD, Visualisation
-start = 0
-finish = 2110
+start = 102420
+finish = 104165
 emd_month = "January"
-emd_year = "2015"
+emd_year = "2019"
 # Define Signal and time
 t = data['DATETIME'][start:finish].to_numpy()
 # t1 = np.linspace(0, 1, 200) #Experiment
@@ -232,6 +232,10 @@ filename2 = 's2' + emd_month + emd_year + '.csv'
 np.savetxt(filename2, s2, delimiter=",")
 
 # Execute EMD on signal (original vs detrended)
+# Setting a max iteration for the EMD
+EMD.FIXE = 1
+EMD.FIXE_H = 1
+
 IMFs1 = EMD().emd(s1, t)
 IMFs2 = EMD().emd(s2, t)
 N1 = IMFs1.shape[0]+1 # to see how many IMFs there are to plot
